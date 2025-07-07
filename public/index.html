@@ -48,13 +48,18 @@
     button:hover {
       background-color: rgba(255, 255, 255, 0.5);
     }
+
+    a {
+      color: #add8e6;
+      text-decoration: underline;
+    }
   </style>
 
   <!-- 🚀 Grafana Faro SDK -->
   <script src="https://unpkg.com/@grafana/faro-web-sdk/dist/bundle/faro-web-sdk.iife.js"></script>
   <script>
     window.FaroWebSDK.initializeFaro({
-      url: "https://faro-collector-prod-eu-west-0.grafana.net/collect/YOUR_FARO_URL_ID", // 🔁 Replace this with your actual Faro URL
+      url: "https://faro-collector-prod-eu-west-0.grafana.net/collect/YOUR_FARO_URL_ID", // Replace with your Faro URL
       app: {
         name: "parking-charges-static",
         version: "1.0.0"
@@ -94,15 +99,24 @@
       kisumu: { audi: 100, volkswagen: 200, mercedes: 300 }
     };
 
+    const cityPhotos = {
+      nairobi: "https://www.pexels.com/photo/clouds-over-highway-in-city-15496542/",
+      mombasa: "https://www.pexels.com/photo/buildings-near-body-of-water-13418220/",
+      kisumu: "https://www.pexels.com/photo/body-of-water-2091351/"
+    };
+
     function calculate() {
       const town = document.getElementById("town").value;
       const car = document.getElementById("car").value;
       const amount = charges[town][car];
+      const photoLink = cityPhotos[town];
 
-      const message = `Parking charges in ${capitalize(town)} for a ${capitalize(car)} is KES ${amount}.`;
-      document.getElementById("result").textContent = message;
+      const resultText = `Parking charges in ${capitalize(town)} for a ${capitalize(car)} is KES ${amount}.`;
+      const linkHTML = `<br/><a href="${photoLink}" target="_blank">View photo of ${capitalize(town)}</a>`;
 
-      // 📊 Push custom event to Faro
+      document.getElementById("result").innerHTML = resultText + linkHTML;
+
+      // 📊 Send event to Faro
       window.FaroWebSDK.faro.api.pushEvent("ChargeCalculated", {
         town,
         car,
