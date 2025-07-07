@@ -3,38 +3,58 @@
 <head>
   <meta charset="UTF-8" />
   <title>Parking Charges Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-    font-family: Arial, sans-serif;
-    margin: 2rem;
-    background-image: url('https://images.pexels.com/photos/19049562/pexels-photo-19049562.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=1080');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    color: white;
-    text-shadow: 1px 1px 4px #000;
-  }
-  label, select, button {
-    margin-top: 1rem;
-    display: block;
-    background-color: rgba(0, 0, 0, 0.5);
-    padding: 0.5rem;
-    border-radius: 4px;
-    color: white;
-    border: none;
-  }
-  h1, h2 {
-    background-color: rgba(0, 0, 0, 0.5);
-    padding: 1rem;
-    border-radius: 4px;
-  }
+      font-family: Arial, sans-serif;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-image: url('https://images.pexels.com/photos/19049562/pexels-photo-19049562.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=1080');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      color: white;
+      text-shadow: 1px 1px 4px #000;
+    }
+
+    .container {
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      width: 300px;
+      text-align: center;
+    }
+
+    label, select, button {
+      margin-top: 1rem;
+      display: block;
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: none;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    button {
+      background-color: rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: rgba(255, 255, 255, 0.5);
+    }
   </style>
 
   <!-- 🚀 Grafana Faro SDK -->
   <script src="https://unpkg.com/@grafana/faro-web-sdk/dist/bundle/faro-web-sdk.iife.js"></script>
   <script>
     window.FaroWebSDK.initializeFaro({
-      url: "https://faro-collector-prod-eu-west-0.grafana.net/collect/YOUR_FARO_URL_ID", // <-- Replace this
+      url: "https://faro-collector-prod-eu-west-0.grafana.net/collect/YOUR_FARO_URL_ID", // 🔁 Replace this with your actual Faro URL
       app: {
         name: "parking-charges-static",
         version: "1.0.0"
@@ -46,24 +66,26 @@
   </script>
 </head>
 <body>
-  <h1>Parking Charges Calculator</h1>
+  <div class="container">
+    <h1>Parking Charges Calculator</h1>
 
-  <label for="town">Select Town:</label>
-  <select id="town">
-    <option value="nairobi">Nairobi</option>
-    <option value="mombasa">Mombasa</option>
-    <option value="kisumu">Kisumu</option>
-  </select>
+    <label for="town">Select Town:</label>
+    <select id="town">
+      <option value="nairobi">Nairobi</option>
+      <option value="mombasa">Mombasa</option>
+      <option value="kisumu">Kisumu</option>
+    </select>
 
-  <label for="car">Select Car Model:</label>
-  <select id="car">
-    <option value="audi">Audi</option>
-    <option value="volkswagen">Volkswagen</option>
-    <option value="mercedes">Mercedes</option>
-  </select>
+    <label for="car">Select Car Model:</label>
+    <select id="car">
+      <option value="audi">Audi</option>
+      <option value="volkswagen">Volkswagen</option>
+      <option value="mercedes">Mercedes</option>
+    </select>
 
-  <button onclick="calculate()">Get Charges</button>
-  <h2 id="result"></h2>
+    <button onclick="calculate()">Get Charges</button>
+    <h2 id="result"></h2>
+  </div>
 
   <script>
     const charges = {
@@ -80,7 +102,7 @@
       const message = `Parking charges in ${capitalize(town)} for a ${capitalize(car)} is KES ${amount}.`;
       document.getElementById("result").textContent = message;
 
-      // 📊 Custom event for Faro
+      // 📊 Push custom event to Faro
       window.FaroWebSDK.faro.api.pushEvent("ChargeCalculated", {
         town,
         car,
