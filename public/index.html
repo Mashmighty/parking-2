@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Parking Charges Calculator</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    label, select, button { margin-top: 1rem; display: block; }
+  </style>
+
+  <!-- 🚀 Grafana Faro SDK -->
+  <script src="https://unpkg.com/@grafana/faro-web-sdk/dist/bundle/faro-web-sdk.iife.js"></script>
+  <script>
+    window.FaroWebSDK.initializeFaro({
+      url: 'https://faro-collector-prod-eu-west-0.grafana.net/collect/YOUR_APP_ID',
+      app: { name: 'parking-charges-app', version: '1.0.0' },
+      instrumentations: [FaroWebSDK.getWebInstrumentations()]
+    });
+  </script>
+</head>
+<body>
+  <h1>Parking Charges Calculator</h1>
+
+  <label for="town">Select Town:</label>
+  <select id="town">
+    <option value="nairobi">Nairobi</option>
+    <option value="mombasa">Mombasa</option>
+    <option value="kisumu">Kisumu</option>
+  </select>
+
+  <label for="car">Select Car Model:</label>
+  <select id="car">
+    <option value="audi">Audi</option>
+    <option value="volkswagen">Volkswagen</option>
+    <option value="mercedes">Mercedes</option>
+  </select>
+
+  <button onclick="calculate()">Get Charges</button>
+  <h2 id="result"></h2>
+
+  <script>
+    async function calculate() {
+      const town = document.getElementById('town').value;
+      const car = document.getElementById('car').value;
+
+      try {
+        const res = await fetch(`/api/charges?town=${town}&car=${car}`);
+        const data = await res.json();
+
+        if (res.ok) {
+          document.getElementById('result').textContent =
+            `Parking charges in ${capitalize(town)} for a ${capitalize(car)} is KES ${data.amount}.`;
+          window.FaroWebSDK.faro.api.pushEvent('ChargeCalculated', { town, car, amount: data.amount });
+        } else {
+          document.getElementById('result').textContent = data.error;
+        }
+      } catch (err) {
+        document.getElementById('result').textContent = 'Failed to fetch charges.';
+        console.error(err);
+      }
+    }
+
+    function capitalize(s) {
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+  </script>
+</body>
+</html>
