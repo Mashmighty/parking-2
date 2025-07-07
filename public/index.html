@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Parking Charges Calculator</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 2rem; }
@@ -12,9 +12,14 @@
   <script src="https://unpkg.com/@grafana/faro-web-sdk/dist/bundle/faro-web-sdk.iife.js"></script>
   <script>
     window.FaroWebSDK.initializeFaro({
-      url: 'https://faro-collector-prod-eu-west-0.grafana.net/collect/YOUR_APP_ID',
-      app: { name: 'parking-charges-app', version: '1.0.0' },
-      instrumentations: [FaroWebSDK.getWebInstrumentations()]
+      url: "https://faro-collector-prod-eu-west-0.grafana.net/collect/YOUR_FARO_URL_ID",
+      app: {
+        name: "parking-charges-app",
+        version: "1.0.0"
+      },
+      instrumentations: [
+        FaroWebSDK.getWebInstrumentations()
+      ]
     });
   </script>
 </head>
@@ -40,28 +45,28 @@
 
   <script>
     async function calculate() {
-      const town = document.getElementById('town').value;
-      const car = document.getElementById('car').value;
+      const town = document.getElementById("town").value;
+      const car = document.getElementById("car").value;
 
       try {
-        const res = await fetch(`/api/charges?town=${town}&car=${car}`);
+        const res = await fetch(`api/charges?town=${town}&car=${car}`);
         const data = await res.json();
 
         if (res.ok) {
-          document.getElementById('result').textContent =
+          document.getElementById("result").textContent =
             `Parking charges in ${capitalize(town)} for a ${capitalize(car)} is KES ${data.amount}.`;
-          window.FaroWebSDK.faro.api.pushEvent('ChargeCalculated', { town, car, amount: data.amount });
+          window.FaroWebSDK.faro.api.pushEvent("ChargeCalculated", { town, car, amount: data.amount });
         } else {
-          document.getElementById('result').textContent = data.error;
+          document.getElementById("result").textContent = data.error || "Error calculating charges.";
         }
-      } catch (err) {
-        document.getElementById('result').textContent = 'Failed to fetch charges.';
-        console.error(err);
+      } catch (error) {
+        document.getElementById("result").textContent = "Failed to fetch charges.";
+        console.error(error);
       }
     }
 
-    function capitalize(s) {
-      return s.charAt(0).toUpperCase() + s.slice(1);
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
     }
   </script>
 </body>
