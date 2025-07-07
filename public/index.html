@@ -1,12 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Parking Charges Calculator</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 2rem; }
     label, select, button { margin-top: 1rem; display: block; }
   </style>
+
+  <!-- 🚀 Grafana Faro SDK -->
+  <script src="https://unpkg.com/@grafana/faro-web-sdk/dist/bundle/faro-web-sdk.iife.js"></script>
+  <script>
+    window.FaroWebSDK.initializeFaro({
+      url: "https://faro-collector-prod-eu-west-0.grafana.net/collect/YOUR_FARO_URL_ID", // <-- Replace this
+      app: {
+        name: "parking-charges-static",
+        version: "1.0.0"
+      },
+      instrumentations: [
+        FaroWebSDK.getWebInstrumentations()
+      ]
+    });
+  </script>
 </head>
 <body>
   <h1>Parking Charges Calculator</h1>
@@ -20,28 +35,39 @@
 
   <label for="car">Select Car Model:</label>
   <select id="car">
-    <option value="sedan">Audi</option>
-    <option value="suv">Volkswagen</option>
-    <option value="truck">Mercedes</option>
+    <option value="audi">Audi</option>
+    <option value="volkswagen">Volkswagen</option>
+    <option value="mercedes">Mercedes</option>
   </select>
 
   <button onclick="calculate()">Get Charges</button>
-
   <h2 id="result"></h2>
 
   <script>
     const charges = {
-      nairobi: { sedan: 200, suv: 300, truck: 400 },
-      mombasa: { sedan: 150, suv: 250, truck: 350 },
-      kisumu: { sedan: 100, suv: 200, truck: 300 }
+      nairobi: { audi: 200, volkswagen: 300, mercedes: 400 },
+      mombasa: { audi: 150, volkswagen: 250, mercedes: 350 },
+      kisumu: { audi: 100, volkswagen: 200, mercedes: 300 }
     };
 
     function calculate() {
-      const town = document.getElementById('town').value;
-      const car = document.getElementById('car').value;
+      const town = document.getElementById("town").value;
+      const car = document.getElementById("car").value;
       const amount = charges[town][car];
-      document.getElementById('result').textContent = 
-        `Parking charges in ${town.charAt(0).toUpperCase() + town.slice(1)} for a ${car.toUpperCase()} is KES ${amount}.`;
+
+      const message = `Parking charges in ${capitalize(town)} for a ${capitalize(car)} is KES ${amount}.`;
+      document.getElementById("result").textContent = message;
+
+      // 📊 Custom event for Faro
+      window.FaroWebSDK.faro.api.pushEvent("ChargeCalculated", {
+        town,
+        car,
+        amount
+      });
+    }
+
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
     }
   </script>
 </body>
