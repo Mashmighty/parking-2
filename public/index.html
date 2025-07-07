@@ -1,27 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Parking Charges Calculator</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 2rem; }
     label, select, button { margin-top: 1rem; display: block; }
   </style>
-
-  <!-- 🚀 Grafana Faro SDK -->
-  <script src="https://unpkg.com/@grafana/faro-web-sdk/dist/bundle/faro-web-sdk.iife.js"></script>
-  <script>
-    window.FaroWebSDK.initializeFaro({
-      url: "https://faro-collector-prod-eu-west-0.grafana.net/collect/YOUR_FARO_URL_ID",
-      app: {
-        name: "parking-charges-app",
-        version: "1.0.0"
-      },
-      instrumentations: [
-        FaroWebSDK.getWebInstrumentations()
-      ]
-    });
-  </script>
 </head>
 <body>
   <h1>Parking Charges Calculator</h1>
@@ -35,38 +20,28 @@
 
   <label for="car">Select Car Model:</label>
   <select id="car">
-    <option value="audi">Audi</option>
-    <option value="volkswagen">Volkswagen</option>
-    <option value="mercedes">Mercedes</option>
+    <option value="sedan">Sedan</option>
+    <option value="suv">SUV</option>
+    <option value="truck">Truck</option>
   </select>
 
   <button onclick="calculate()">Get Charges</button>
+
   <h2 id="result"></h2>
 
   <script>
-    async function calculate() {
-      const town = document.getElementById("town").value;
-      const car = document.getElementById("car").value;
+    const charges = {
+      nairobi: { sedan: 200, suv: 300, truck: 400 },
+      mombasa: { sedan: 150, suv: 250, truck: 350 },
+      kisumu: { sedan: 100, suv: 200, truck: 300 }
+    };
 
-      try {
-        const res = await fetch(`api/charges?town=${town}&car=${car}`);
-        const data = await res.json();
-
-        if (res.ok) {
-          document.getElementById("result").textContent =
-            `Parking charges in ${capitalize(town)} for a ${capitalize(car)} is KES ${data.amount}.`;
-          window.FaroWebSDK.faro.api.pushEvent("ChargeCalculated", { town, car, amount: data.amount });
-        } else {
-          document.getElementById("result").textContent = data.error || "Error calculating charges.";
-        }
-      } catch (error) {
-        document.getElementById("result").textContent = "Failed to fetch charges.";
-        console.error(error);
-      }
-    }
-
-    function capitalize(str) {
-      return str.charAt(0).toUpperCase() + str.slice(1);
+    function calculate() {
+      const town = document.getElementById('town').value;
+      const car = document.getElementById('car').value;
+      const amount = charges[town][car];
+      document.getElementById('result').textContent = 
+        `Parking charges in ${town.charAt(0).toUpperCase() + town.slice(1)} for a ${car.toUpperCase()} is KES ${amount}.`;
     }
   </script>
 </body>
