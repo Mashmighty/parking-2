@@ -55,19 +55,36 @@
     }
   </style>
 
-  <!-- 🚀 Grafana Faro SDK -->
-  <script src="https://unpkg.com/@grafana/faro-web-sdk/dist/bundle/faro-web-sdk.iife.js"></script>
+  <!-- 🚀 Grafana Faro Web SDK (CDN with tracing) -->
   <script>
-    window.FaroWebSDK.initializeFaro({
-      url: "https://faro-collector-prod-eu-west-0.grafana.net/collect/YOUR_FARO_URL_ID", // Replace with your Faro URL
-      app: {
-        name: "parking-charges-static",
-        version: "1.0.0"
-      },
-      instrumentations: [
-        FaroWebSDK.getWebInstrumentations()
-      ]
-    });
+    (function () {
+      var webSdkScript = document.createElement("script");
+      webSdkScript.src = "https://unpkg.com/@grafana/faro-web-sdk@latest/dist/bundle/faro-web-sdk.iife.js";
+
+      webSdkScript.onload = () => {
+        window.GrafanaFaroWebSdk.initializeFaro({
+          url: "https://faro-collector-prod-me-central-1.grafana.net/collect/f6fa066ba3dbfecc68d84e303172f850",
+          app: {
+            name: "Parking charges",
+            version: "1.0.0",
+            environment: "production"
+          }
+        });
+
+        var webTracingScript = document.createElement("script");
+        webTracingScript.src = "https://unpkg.com/@grafana/faro-web-tracing@latest/dist/bundle/faro-web-tracing.iife.js";
+
+        webTracingScript.onload = () => {
+          window.GrafanaFaroWebSdk.faro.instrumentations.add(
+            new window.GrafanaFaroWebTracing.TracingInstrumentation()
+          );
+        };
+
+        document.head.appendChild(webTracingScript);
+      };
+
+      document.head.appendChild(webSdkScript);
+    })();
   </script>
 </head>
 <body>
@@ -116,12 +133,18 @@
 
       document.getElementById("result").innerHTML = resultText + linkHTML;
 
-      // 📊 Send event to Faro
-      window.FaroWebSDK.faro.api.pushEvent("ChargeCalculated", {
-        town,
-        car,
-        amount
-      });
+      // 🧠 Send event to Faro if available
+      try {
+        if (window.GrafanaFaroWebSdk?.faro?.api) {
+          window.GrafanaFaroWebSdk.faro.api.pushEvent("ChargeCalculated", {
+            town,
+            car,
+            amount
+          });
+        }
+      } catch (e) {
+        console.warn("Faro event failed to send:", e);
+      }
     }
 
     function capitalize(str) {
