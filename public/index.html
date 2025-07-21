@@ -2,157 +2,74 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Parking Charges Calculator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Parking System</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background-image: url('https://images.pexels.com/photos/19049562/pexels-photo-19049562.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=1080');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      color: rgb(172, 25, 109);
-      text-shadow: 1px 1px 4px #000;
-    }
-
-    .container {
-      background-color: rgba(0, 0, 0, 0.5);
-      padding: 2rem;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-      width: 400px;
+      padding: 20px;
       text-align: center;
     }
-
     label, select, button {
-      margin-top: 1rem;
-      display: block;
-      width: 100%;
-      padding: 0.5rem;
-      border-radius: 4px;
-      border: none;
-      background-color: rgba(255, 255, 255, 0.1);
-      color: white;
-    }
-
-    button {
-      background-color: rgba(255, 255, 255, 0.3);
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: rgba(255, 255, 255, 0.5);
-    }
-
-    a {
-      color: #add8e6;
-      text-decoration: underline;
+      margin: 10px;
     }
   </style>
-
-  <!-- 🚀 Grafana Faro Web SDK (CDN with tracing) -->
-  <script>
-    (function () {
-      var webSdkScript = document.createElement("script");
-      webSdkScript.src = "https://unpkg.com/@grafana/faro-web-sdk@latest/dist/bundle/faro-web-sdk.iife.js";
-
-      webSdkScript.onload = () => {
-        window.GrafanaFaroWebSdk.initializeFaro({
-          url: "https://faro-collector-prod-me-central-1.grafana.net/collect/f6fa066ba3dbfecc68d84e303172f850",
-          app: {
-            name: "Parking charges",
-            version: "1.0.0",
-            environment: "production"
-          },
-          sessionTracking: {
-            samplingRate: 1
-          }
-        });
-
-        var webTracingScript = document.createElement("script");
-        webTracingScript.src = "https://unpkg.com/@grafana/faro-web-tracing@latest/dist/bundle/faro-web-tracing.iife.js";
-
-        webTracingScript.onload = () => {
-          window.GrafanaFaroWebSdk.faro.instrumentations.add(
-            new window.GrafanaFaroWebTracing.TracingInstrumentation()
-          );
-        };
-
-        document.head.appendChild(webTracingScript);
-      };
-
-      document.head.appendChild(webSdkScript);
-    })();
-  </script>
 </head>
 <body>
-  <div class="container">
-    <h1>Parking Charges Calculator</h1>
+  <h1>Smart Parking System</h1>
 
-    <label for="town">Select Town:</label>
-    <select id="town">
+  <form id="parkingForm">
+    <label for="city">Select City:</label>
+    <select id="city">
       <option value="nairobi">Nairobi</option>
       <option value="mombasa">Mombasa</option>
       <option value="kisumu">Kisumu</option>
     </select>
 
-    <label for="car">Select Car Model:</label>
-    <select id="car">
+    <label for="carModel">Select Car Model:</label>
+    <select id="carModel">
       <option value="audi">Audi</option>
       <option value="volkswagen">Volkswagen</option>
       <option value="mercedes">Mercedes</option>
     </select>
 
-    <button onclick="calculate()">Get Charges</button>
-    <h2 id="result"></h2>
-  </div>
+    <button type="submit">Get Parking Charge</button>
+  </form>
+
+  <div id="result"></div>
 
   <script>
-    const charges = {
-      nairobi: { audi: 200, volkswagen: 300, mercedes: 400 },
-      mombasa: { audi: 150, volkswagen: 250, mercedes: 350 },
-      kisumu: { audi: 100, volkswagen: 200, mercedes: 300 }
-    };
+    const form = document.getElementById("parkingForm");
+    const resultDiv = document.getElementById("result");
 
-    const cityPhotos = {
-      nairobi: "https://www.pexels.com/photo/clouds-over-highway-in-city-15496542/",
-      mombasa: "https://www.pexels.com/photo/buildings-near-body-of-water-13418220/",
-      kisumu: "https://www.pexels.com/photo/body-of-water-2091351/"
-    };
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
 
-    function calculate() {
-      const town = document.getElementById("town").value;
-      const car = document.getElementById("car").value;
-      const amount = charges[town][car];
-      const photoLink = cityPhotos[town];
+      const city = document.getElementById("city").value;
+      const carModel = document.getElementById("carModel").value;
 
-      const resultText = `Parking charges in ${capitalize(town)} for a ${capitalize(car)} is KES ${amount}.`;
-      const linkHTML = `<br/><a href="${photoLink}" target="_blank">View photo of ${capitalize(town)}</a>`;
-
-      document.getElementById("result").innerHTML = resultText + linkHTML;
-
-      // 🧠 Send event to Faro if available
       try {
-        if (window.GrafanaFaroWebSdk?.faro?.api) {
-          window.GrafanaFaroWebSdk.faro.api.pushEvent("ChargeCalculated", {
-            town,
-            car,
-            amount
-          });
-        }
-      } catch (e) {
-        console.warn("Faro event failed to send:", e);
-      }
-    }
+        const res = await fetch(`http://localhost:4000/api/charges?city=${city}&carModel=${carModel}`);
+        const data = await res.json();
 
-    function capitalize(str) {
-      return str.charAt(0).toUpperCase() + str.slice(1);
-    }
+        if (res.ok) {
+          const cityPhotoLinks = {
+            nairobi: "https://www.pexels.com/photo/clouds-over-highway-in-city-15496542/",
+            mombasa: "https://www.pexels.com/photo/buildings-near-body-of-water-13418220/",
+            kisumu: "https://www.pexels.com/photo/body-of-water-2091351/"
+          };
+
+          resultDiv.innerHTML = `
+            <p>Parking charge in ${data.city.charAt(0).toUpperCase() + data.city.slice(1)} for ${data.carModel} is <strong>KES ${data.charge}</strong>.</p>
+            <a href="${cityPhotoLinks[city]}" target="_blank">${data.city.charAt(0).toUpperCase() + data.city.slice(1)} Photo</a>
+          `;
+        } else {
+          resultDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
+        }
+      } catch (err) {
+        resultDiv.innerHTML = `<p style="color: red;">Network error. Is the backend running?</p>`;
+      }
+    });
   </script>
 </body>
 </html>
