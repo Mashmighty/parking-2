@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@embrace-io/web-sdk": "^1.8.1"
+  }
+}
