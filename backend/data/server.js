@@ -12,14 +12,27 @@ app.use(cors());
 // Setup PostgreSQL client
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false, // Needed for Railway PostgreSQL
+  },
 });
 
+// Health check endpoint
+app.get("/", (req, res) => {
+  res.send("Smart Parking backend is running 🚗");
+});
+
+// Charges endpoint
 app.get("/api/charges", async (req, res) => {
   const { city, carModel } = req.query;
 
+  if (!city || !carModel) {
+    return res.status(400).json({ error: "city and carModel are required." });
+  }
+
   try {
     const result = await pool.query(
-      "SELECT charge FROM charges WHERE city = $1 AND car_model = $2",
+      "SELECT charge FROM charges WHERE LOWER(city) = $1 AND LOWER(car_model) = $2",
       [city.toLowerCase(), carModel.toLowerCase()]
     );
 
